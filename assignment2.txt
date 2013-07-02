@@ -1,0 +1,259 @@
+August Brenner
+G00682282
+July 1st 2013
+
+
+
+
+
+*******************************************************************************
+lab2modules.py
+
+
+
+#!/usr/local/bin/python3
+# Name: August Brenner
+# File name: lab2.modules.py
+# Date: July 3rd, 2013
+
+
+# module for generating header HTML
+def HTML_START(title):
+    HTML_START = """
+    <html>
+        <head>
+            <style type='text/css'>
+                td {
+                    text-align: right;
+                    padding-left: 0.5em;
+                    padding-right: 0.5em;
+                }
+                #top-nav ul li {
+                    display: inline;
+                    padding-right: 1em;
+                }
+            </style>
+        </head>
+        <body>
+            <div id="top-nav">
+                <ul>
+                   <li><a href="lab2.1.py">lab2.1.py</a></li>
+                   <li><a href="lab2.2.py">lab2.2.py</a></li>
+                   <li><a href="lab2.3.py">lab2.3.py</a></li>
+                </ul>
+            </div>
+            <p>********** """ + title + """ **********</p>
+    """
+    print(HTML_START)
+
+
+HTML_END = """
+    </body>
+</html>"""
+
+
+# function for generating table from a list of words
+def table(cell_array, cells_per_row):
+    i = 0
+    print('''<pre><table border="1"><tr>''')
+    for cell in cell_array:
+        if i % cells_per_row == 0:
+            print('</tr><tr>')
+        print('<td>' + str(cell) + '</td>')
+        i += 1
+
+    if len(cell_array) % cells_per_row != 0:
+        extra_cells = cells_per_row - (len(cell_array) % cells_per_row)
+        print('<td></td>' * extra_cells)
+
+    print('</tr></table></pre>')
+
+
+
+
+
+
+
+*******************************************************************************
+lab2.1.py
+
+
+
+#!/usr/local/bin/python3
+# Name: August Brenner
+# File name: lab2.1.py
+# Date: July 3rd, 2013
+
+from urllib.request import urlopen
+import lab2modules
+
+print("Content-type: text/html\n")
+lab2modules.HTML_START("Lab 2 Exercise 2.1")
+
+# open file from URL
+file = urlopen('http://server.csmcis.net/~putnamd/oliver.txt')
+oliver_text = file.read().decode('utf-8').replace('--', ' ').replace('.', '').replace(',', '').lower()
+
+print(oliver_text)
+
+
+# Break file into words and print first 100 in a table
+oliver_words = oliver_text.split()
+lab2modules.table(oliver_words[0:100], 6)
+
+
+# function for printing unique words of a set
+def unique_words(word_array, set_description):
+    unique_words = set(word_array)
+    lab2modules.table(unique_words, 6)
+    print('<pre> There are ' + str(len(unique_words)) + ' unique words in ' + set_description + '</pre>')
+
+
+# table of all unique words in the first 100 words
+unique_words(oliver_words[0:100], "the first 100 words")
+
+# table of all unique words in the first 100 words
+unique_words(oliver_words[-100:], "the last 100 words")
+
+# table of all unique words in the first and last 100 words
+unique_words_union = set(oliver_words[0:100]).union(set(oliver_words[-100:]))
+lab2modules.table(unique_words_union, 6)
+print('<pre> There are ' + str(len(unique_words_union)) + ' unique words in the first and last 100 words</pre>')
+
+# table of all unique words in the first 100 and last 100 words that are in one set or another, but not in both
+unique_words_symmetric_difference = set(oliver_words[0:100]).symmetric_difference(set(oliver_words[-100:]))
+lab2modules.table(unique_words_symmetric_difference, 6)
+print('<pre> There are ' + str(len(unique_words_symmetric_difference)) +
+      ' unique words in the first and last 100 that are in one set or another, but not in both</pre>')
+
+
+# function to remove members of the second list from the first list
+def exclude(base_list, removal_list):
+    base_list = list(set(base_list))
+    for word in removal_list:
+        if word in base_list:
+            base_list.remove(word)
+    return sorted(base_list)
+
+
+# table of all unique words in the first 100 words that are not in the last 100 words
+unique_words(exclude(oliver_words[0:100], oliver_words[-100:]), "the first 100 words not in the last 100 words")
+
+# table of all unique words in the first 100 words that are not in the last 100 words
+unique_words(exclude(oliver_words[-100:], oliver_words[0:100]), "the last 100 words not in the first 100 words")
+
+
+lab2modules.HTML_End
+
+
+
+
+
+*******************************************************************************
+lab2.2.py
+
+
+
+
+
+#!/usr/local/bin/python3
+# Name: August Brenner
+# File name: lab2.2.py
+# Date: July 3rd, 2013
+
+# Modules for CGI handling
+import cgi
+import lab2modules
+
+print("Content-type: text/html\n")
+
+
+def HTML_FORMAT_SELECT_FORM(formats):
+
+    HTML_FORMATS = ""
+
+    for format in formats:
+        HTML_FORMATS += '<input type="radio" name="format" value="'\
+                        + format + '" /> ' + format.title()
+
+    HTML_FORM = """
+        <form action="lab2.2.py" method="post" target="_self">""" + HTML_FORMATS + """
+        <input type="submit" value="Select Format" />
+        </form>
+        """
+    return HTML_FORM
+
+
+# fib() generates Fibonacci numbers
+def fib(n):
+    a, b = 0, 1
+    for i in range(n):
+        a, b = b, a + b
+    return a
+
+
+# instance of FieldStorage
+form = cgi.FieldStorage()
+
+# Get data from fields
+if form.getvalue('format'):
+    selected_format = form.getvalue('format')
+else:
+    selected_format = "decimal"
+
+
+lab2modules.HTML_START("Lab 2 Exercise 2.2")
+print("<h2> First 50 Fibonacci numbers in " + selected_format + "</h2>")
+
+# generates html form
+formats = ["decimal", "hex", "octal", "floating point"]
+print(HTML_FORMAT_SELECT_FORM(formats))
+
+# generate a list of the first 50 Fibonacci numbers wih list comprehension
+fib_list = list(range(50))
+fib_list = [fib(x) for x in fib_list]
+
+# handle the different format cases
+if selected_format == "decimal":
+    lab2modules.table(fib_list, 6)
+elif selected_format == "hex":
+    fib_list = [hex(x) for x in fib_list]
+    lab2modules.table(fib_list,6)
+elif selected_format == "octal":
+    fib_list = [oct(x) for x in fib_list]
+    lab2modules.table(fib_list, 6)
+elif selected_format == "floating point":
+    fib_list = [float(x) for x in fib_list]
+    lab2modules.table(fib_list, 6)
+
+
+lab2modules.HTML_END
+
+
+
+
+
+
+*******************************************************************************
+lab2.3.py
+
+
+
+
+#!/usr/local/bin/python3
+# Name: August Brenner
+# File name: lab2.3.py
+# Date: July 3rd, 2013
+
+# Modules for CGI handling
+import lab2modules
+
+print("Content-type: text/html\n")
+lab2modules.HTML_START("Lab 2 Exercise 2.3")
+print("<h2> Methods in Classes </h2>")
+python_classes = [list, dict, tuple, str, int, float]
+
+for python_class in python_classes:
+    lab2modules.table(dir(python_class), 7)
+
+lab2modules.HTML_END
