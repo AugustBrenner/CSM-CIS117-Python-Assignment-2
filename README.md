@@ -1,7 +1,5 @@
-CSM-CIS117-Python-Assignment-2
+Python CGI Scripts
 ==============================
-
-This repo contains all the files for the CSM Python class (CIS 117) assignment 2.
 
 It uses a module that contains all of the HTML wrappers for use in each of the python files.
 
